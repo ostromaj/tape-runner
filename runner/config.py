@@ -27,8 +27,8 @@ ALLOW_SHORTS = True              # pretend shorts (most spot apps can't short; t
 TAKE_PROFIT_BPS = 8.0
 STOP_LOSS_BPS = 6.0
 MAX_HOLD_SEC = 60.0
-MIN_HOLD_SEC = 3.0               # signal-flip exits only after this
-FLIP_EXIT_SCORE = 0.25           # exit a long if score falls below -0.25 (mirror for shorts)
+MIN_HOLD_SEC = 5.0               # signal-flip exits only after this
+FLIP_EXIT_SCORE = 0.45           # exit a long if score falls below -0.45 (mirror for shorts)
 COOLDOWN_SEC = 20.0              # pause per coin after a trade closes
 
 # ---- Money ------------------------------------------------------------------------------

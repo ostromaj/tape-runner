@@ -96,10 +96,17 @@ def main():
         log("No saved portfolio. Starting fresh with $100.")
         state = engine.new_state(t_start)
     if "--reset" in sys.argv:
-        state = engine.reset(state, time.time())
-        res = storage.save(dump(state), sha)
-        log("reset:", res[0])
-        sys.exit(0 if res[0] == "ok" else 1)
+        for attempt in range(6):          # the live bot saves every 30s; retry if it beat us to it
+            fresh = engine.reset(state, time.time())
+            res = storage.save(dump(fresh), sha)
+            log("reset attempt", attempt + 1, res[0])
+            if res[0] == "ok":
+                sys.exit(0)
+            time.sleep(2)
+            state, sha = storage.load()
+            if not state:
+                state = engine.new_state(time.time())
+        sys.exit(1)
 
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID"):

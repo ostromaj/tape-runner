@@ -1,0 +1,29 @@
+name: Reset to $100
+
+# Archives the current run into "Past runs" and restarts both scoreboards at $100.
+# The live bot notices within ~30 seconds and switches to the new run.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type RESET to confirm"
+        required: true
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tape-reset
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    if: ${{ inputs.confirm == 'RESET' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 -u runner/run.py --reset

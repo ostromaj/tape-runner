@@ -1,0 +1,43 @@
+name: Tape Runner
+
+# One long-running job streams the Coinbase order book and paper-trades. GitHub stops jobs
+# after 6 hours, so each run works ~5h40m, then starts the next one. The schedule below is a
+# watchdog: if nothing is running it starts a run; if one is running it just waits in line.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,37 * * * *"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: tape-runner
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Trade (streams the order book for ~5h40m)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "STARTED=$(date +%s)" >> "$GITHUB_ENV"
+          python3 -u runner/run.py
+
+      - name: Hand off to the next shift
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ran=$(( $(date +%s) - ${STARTED:-$(date +%s)} ))
+          if [ "$ran" -lt 180 ]; then
+            echo "That run ended after only ${ran}s. Waiting 5 minutes before restarting so a bug can't loop."
+            sleep 300
+          fi
+          gh workflow run runner.yml --ref "$GITHUB_REF_NAME"
