@@ -157,6 +157,7 @@ def main():
                             log(f"CLOSE {p} {tr['move_bps']:+.2f} bps ({tr['reason']}) raw {tr['pnl']['raw']:+.4f} real {tr['pnl']['real']:+.4f}")
                 try:
                     adopted = saver.adopt.get_nowait()
+                    adopted["feed"] = state["feed"]          # keep the live connection status
                     state = adopted
                     state["runner"] = {"started": t_start, "handoff_at": handoff_at, "url": run_url}
                     feed.state = state
