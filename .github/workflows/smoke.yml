@@ -1,0 +1,15 @@
+name: Test run (no saving)
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How many minutes to run"
+        default: "3"
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 tests/ws_test.py
+      - run: python3 -u runner/run.py --dry --minutes "${{ inputs.minutes }}"
